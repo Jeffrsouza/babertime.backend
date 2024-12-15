@@ -12,8 +12,8 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace Infra.Migrations
 {
     [DbContext(typeof(DBContext))]
-    [Migration("20241114212351_InitialMigration")]
-    partial class InitialMigration
+    [Migration("20241208163710_HorariosMigration")]
+    partial class HorariosMigration
     {
         /// <inheritdoc />
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
@@ -37,7 +37,16 @@ namespace Infra.Migrations
                         .HasColumnType("int");
 
                     b.Property<DateTime>("Data")
-                        .HasColumnType("datetime2");
+                        .HasColumnType("Date");
+
+                    b.Property<int?>("FuncionarioId")
+                        .HasColumnType("int");
+
+                    b.Property<int>("Horas")
+                        .HasColumnType("int");
+
+                    b.Property<int>("Minutos")
+                        .HasColumnType("int");
 
                     b.Property<string>("Observacao")
                         .IsRequired()
@@ -52,6 +61,8 @@ namespace Infra.Migrations
                     b.HasKey("Id");
 
                     b.HasIndex("ClienteId");
+
+                    b.HasIndex("FuncionarioId");
 
                     b.HasIndex("ServicoId");
 
@@ -73,9 +84,11 @@ namespace Infra.Migrations
                         .IsRequired()
                         .HasColumnType("nvarchar(max)");
 
-                    b.Property<string>("Tempo")
-                        .IsRequired()
-                        .HasColumnType("nvarchar(max)");
+                    b.Property<int>("TempoHoras")
+                        .HasColumnType("int");
+
+                    b.Property<int>("TempoMinutos")
+                        .HasColumnType("int");
 
                     b.Property<decimal>("Valor")
                         .HasColumnType("decimal(18,2)");
@@ -105,6 +118,12 @@ namespace Infra.Migrations
                         .IsRequired()
                         .HasColumnType("nvarchar(max)");
 
+                    b.Property<int?>("HoraFim")
+                        .HasColumnType("int");
+
+                    b.Property<int?>("HoraInicio")
+                        .HasColumnType("int");
+
                     b.Property<string>("Nome")
                         .IsRequired()
                         .HasColumnType("nvarchar(max)");
@@ -128,7 +147,7 @@ namespace Infra.Migrations
                             Celular = "",
                             Email = "Admin",
                             Nome = "Admin",
-                            Senha = "$2a$06$xxq/pttfNJALm2pKAZWvoO4D0bSKJmE2az41BcHgm8DhQSGDbraTK",
+                            Senha = "$2a$06$q/Euk22vypCSm11iNowK6uyX/zBK1UVBCyUnvZ.e1knaCS8PI0hyy",
                             Tipo = 1
                         });
                 });
@@ -139,11 +158,17 @@ namespace Infra.Migrations
                         .WithMany()
                         .HasForeignKey("ClienteId");
 
+                    b.HasOne("Domain.Entity.Usuario", "Funcionario")
+                        .WithMany()
+                        .HasForeignKey("FuncionarioId");
+
                     b.HasOne("Domain.Entity.Servico", "Servico")
                         .WithMany()
                         .HasForeignKey("ServicoId");
 
                     b.Navigation("Cliente");
+
+                    b.Navigation("Funcionario");
 
                     b.Navigation("Servico");
                 });

@@ -1,3 +1,4 @@
+using System.Data;
 using Domain.Entity;
 using Domain.Models;
 using Infra.Repositories;
@@ -15,7 +16,7 @@ public interface IAgendamentoService
 public class AgendamentoService : IAgendamentoService
 {
     private readonly IAgendamentoRepository _repository;
-    
+
     public AgendamentoService(IAgendamentoRepository repository)
     {
         _repository = repository;
@@ -35,7 +36,41 @@ public class AgendamentoService : IAgendamentoService
 
     public void InsertAgendamento(Agendamento agendamento)
     {
-        _repository.InsertAgendamento(agendamento);
+        try
+        {
+
+            var _agendamentos = _repository.GetAgendamentosByFuncionarioData(agendamento.Funcionario.Id, agendamento.Data);
+
+            var inicioServico = NormalizaTempo(agendamento.Horas, agendamento.Minutos);
+            var fimServico = NormalizaTempo(
+                agendamento.Horas + agendamento.Servico.TempoHoras,
+                agendamento.Minutos + agendamento.Servico.TempoMinutos
+                );
+
+            foreach (var x in _agendamentos)
+            {
+                var inicioAgendamento = NormalizaTempo(x.Horas, x.Minutos);
+                var fimAgendamento = NormalizaTempo(x.Horas + x.Servico.TempoHoras, x.Minutos + x.Servico.TempoMinutos);
+
+                if ((inicioServico >= inicioAgendamento && inicioServico <= fimAgendamento)
+                    || (fimServico >= inicioAgendamento && fimServico <= fimAgendamento))
+                {
+                    throw new Exception("Já existe agendamento no horário solicitado.");
+                }
+            }
+            _repository.InsertAgendamento(agendamento);
+        }
+        catch (Exception ex)
+        {
+            throw new Exception("Já existe agendamento no horário solicitado.");
+        }
+    }
+
+    private int NormalizaTempo(int horas, int minutos)
+    {
+        var total = (horas * 60) + minutos;
+
+        return total;
     }
 
     public void UpdateAgendamentoStatus(int agendamentoId, AgendamentoStatus statusId)

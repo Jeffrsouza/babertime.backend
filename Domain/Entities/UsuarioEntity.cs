@@ -10,5 +10,7 @@ public class Usuario
     public string Email { get; set; } = string.Empty;
     public string CPF { get; set; } = string.Empty;
     public string Senha { get; set; } = string.Empty;
+    public int? HoraInicio { get; set; }
+    public int? HoraFim { get; set; }
     public UsuarioTipo Tipo { get; set; }
 }

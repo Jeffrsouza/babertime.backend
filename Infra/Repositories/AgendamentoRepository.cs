@@ -3,6 +3,7 @@ using Microsoft.EntityFrameworkCore;
 using Infra.Context;
 using Domain.Models;
 using System.Diagnostics.CodeAnalysis;
+using System.Data.Common;
 
 namespace Infra.Repositories;
 
@@ -12,7 +13,7 @@ public interface IAgendamentoRepository
     IEnumerable<Agendamento> GetByCliente(int clienteId);
     void InsertAgendamento(Agendamento agendamento);
     void UpdateAgendamentoStatus(int agendamentoId, AgendamentoStatus statusId);
-
+     IEnumerable<Agendamento> GetAgendamentosByFuncionarioData(int funcionarioId, DateTime data);
 }
 
 public class AgendamentoRepository : IAgendamentoRepository
@@ -28,6 +29,7 @@ public class AgendamentoRepository : IAgendamentoRepository
         var agendamentos = _context.Agendamento
             .Include(agendamento => agendamento.Servico)
             .Include(agendamento => agendamento.Cliente)
+            .Include(agendamento => agendamento.Funcionario)
             .ToList();
 
         return agendamentos;
@@ -38,7 +40,8 @@ public class AgendamentoRepository : IAgendamentoRepository
         var agendamentos = _context.Agendamento
             .Include(agendamento => agendamento.Servico)
             .Include(agendamento => agendamento.Cliente)
-            .Where(agendamento => 
+            .Include(agendamento => agendamento.Funcionario)
+            .Where(agendamento =>
                 agendamento.Cliente == null ? false : agendamento.Cliente.Id == clienteId
                 )
             .ToList();
@@ -48,11 +51,14 @@ public class AgendamentoRepository : IAgendamentoRepository
 
     public void InsertAgendamento(Agendamento agendamento)
     {
-        if(agendamento.Servico is not null)
+        if (agendamento.Servico is not null)
             _context.Attach(agendamento.Servico);
 
-        if(agendamento.Cliente is not null)
+        if (agendamento.Cliente is not null)
             _context.Attach(agendamento.Cliente);
+
+        if (agendamento.Funcionario is not null)
+            _context.Attach(agendamento.Funcionario);
 
         _context.Agendamento.Add(agendamento);
         _context.SaveChanges();
@@ -67,5 +73,19 @@ public class AgendamentoRepository : IAgendamentoRepository
             _context.Agendamento.Update(agendamento);
             _context.SaveChanges();
         }
+    }
+
+    public IEnumerable<Agendamento> GetAgendamentosByFuncionarioData(int funcionarioId, DateTime data)
+    {
+        var agendamentos = _context.Agendamento.AsNoTracking()
+            .Include(agendamento => agendamento.Servico)
+            .Include(agendamento => agendamento.Cliente)
+            .Include(agendamento => agendamento.Funcionario)
+            .Where(agendamento =>
+                agendamento.Funcionario == null ? false : agendamento.Funcionario.Id == funcionarioId
+                && agendamento.Data == data)
+            .ToList();
+
+        return agendamentos;
     }
 }

@@ -6,7 +6,7 @@ using Microsoft.EntityFrameworkCore.Migrations;
 namespace Infra.Migrations
 {
     /// <inheritdoc />
-    public partial class InitialMigration : Migration
+    public partial class HorariosMigration : Migration
     {
         /// <inheritdoc />
         protected override void Up(MigrationBuilder migrationBuilder)
@@ -19,7 +19,8 @@ namespace Infra.Migrations
                         .Annotation("SqlServer:Identity", "1, 1"),
                     Descricao = table.Column<string>(type: "nvarchar(max)", nullable: false),
                     Valor = table.Column<decimal>(type: "decimal(18,2)", nullable: false),
-                    Tempo = table.Column<string>(type: "nvarchar(max)", nullable: false),
+                    TempoHoras = table.Column<int>(type: "int", nullable: false),
+                    TempoMinutos = table.Column<int>(type: "int", nullable: false),
                     Deletado = table.Column<bool>(type: "bit", nullable: false)
                 },
                 constraints: table =>
@@ -38,6 +39,8 @@ namespace Infra.Migrations
                     Email = table.Column<string>(type: "nvarchar(max)", nullable: false),
                     CPF = table.Column<string>(type: "nvarchar(max)", nullable: false),
                     Senha = table.Column<string>(type: "nvarchar(max)", nullable: false),
+                    HoraInicio = table.Column<int>(type: "int", nullable: true),
+                    HoraFim = table.Column<int>(type: "int", nullable: true),
                     Tipo = table.Column<int>(type: "int", nullable: false)
                 },
                 constraints: table =>
@@ -53,9 +56,12 @@ namespace Infra.Migrations
                         .Annotation("SqlServer:Identity", "1, 1"),
                     Observacao = table.Column<string>(type: "nvarchar(max)", nullable: false),
                     Status = table.Column<int>(type: "int", nullable: false),
-                    Data = table.Column<DateTime>(type: "datetime2", nullable: false),
+                    Data = table.Column<DateTime>(type: "Date", nullable: false),
+                    Horas = table.Column<int>(type: "int", nullable: false),
+                    Minutos = table.Column<int>(type: "int", nullable: false),
                     ServicoId = table.Column<int>(type: "int", nullable: true),
-                    ClienteId = table.Column<int>(type: "int", nullable: true)
+                    ClienteId = table.Column<int>(type: "int", nullable: true),
+                    FuncionarioId = table.Column<int>(type: "int", nullable: true)
                 },
                 constraints: table =>
                 {
@@ -70,17 +76,27 @@ namespace Infra.Migrations
                         column: x => x.ClienteId,
                         principalTable: "Usuario",
                         principalColumn: "Id");
+                    table.ForeignKey(
+                        name: "FK_Agendamento_Usuario_FuncionarioId",
+                        column: x => x.FuncionarioId,
+                        principalTable: "Usuario",
+                        principalColumn: "Id");
                 });
 
             migrationBuilder.InsertData(
                 table: "Usuario",
-                columns: new[] { "Id", "CPF", "Celular", "Email", "Nome", "Senha", "Tipo" },
-                values: new object[] { 1, "", "", "Admin", "Admin", "$2a$06$xxq/pttfNJALm2pKAZWvoO4D0bSKJmE2az41BcHgm8DhQSGDbraTK", 1 });
+                columns: new[] { "Id", "CPF", "Celular", "Email", "HoraFim", "HoraInicio", "Nome", "Senha", "Tipo" },
+                values: new object[] { 1, "", "", "Admin", null, null, "Admin", "$2a$06$q/Euk22vypCSm11iNowK6uyX/zBK1UVBCyUnvZ.e1knaCS8PI0hyy", 1 });
 
             migrationBuilder.CreateIndex(
                 name: "IX_Agendamento_ClienteId",
                 table: "Agendamento",
                 column: "ClienteId");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_Agendamento_FuncionarioId",
+                table: "Agendamento",
+                column: "FuncionarioId");
 
             migrationBuilder.CreateIndex(
                 name: "IX_Agendamento_ServicoId",
